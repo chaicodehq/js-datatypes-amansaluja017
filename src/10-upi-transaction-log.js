@@ -48,4 +48,59 @@
  */
 export function analyzeUPITransactions(transactions) {
   // Your code here
+
+  if (transactions === null || !Array.isArray(transactions)) return null;
+
+  const filteredTransactions = transactions.filter(transaction => {
+    if (transaction.amount >= 0 && (transaction.type === "credit" || transaction.type === "debit")) return transaction;
+  });
+
+  if (filteredTransactions === null || filteredTransactions.length === 0) return null;
+
+  let response = {};
+  const creditTransactions = [];
+  const debitTransactions = [];
+
+  filteredTransactions.map(transaction => transaction.type === "credit" ? creditTransactions.push(transaction) : debitTransactions.push(transaction));
+
+  response.totalCredit = creditTransactions.reduce((acc, transaction) => acc + transaction.amount, 0);
+
+  response.totalDebit = debitTransactions.reduce((acc, transaction) => acc + transaction.amount, 0);;
+
+  response.netBalance = response.totalCredit - response.totalDebit;
+  response.transactionCount = filteredTransactions.length;
+  response.avgTransaction = Math.round((response.totalCredit + response.totalDebit) / response.transactionCount);
+
+  response.highestTransaction = filteredTransactions.reduce((max, transaction) => transaction.amount > max.amount ? transaction : max);
+
+  response.categoryBreakdown = filteredTransactions.reduce((acc, transaction) => {
+    acc[transaction.category] = (acc[transaction.category] || 0) + transaction.amount
+    return acc;
+  }, {});
+
+  const toArr = filteredTransactions.reduce((acc, transaction) => {
+    acc[transaction.to] = (acc[transaction.to] || 0) + 1;
+    return acc
+  }, {});
+
+  if (Object.entries(toArr).length > 1) {
+    console.log(Object.entries(toArr))
+    response.frequentContact = Object.entries(toArr).reduce((max, to) =>
+
+      to[1] > max[1] ? to : max
+
+    )[0];
+  } else {
+    response.frequentContact = Object.entries(toArr)[0][0]
+  }
+
+  response.allAbove100 = filteredTransactions.every((transaction) => {
+    return transaction.amount > 100
+  });
+
+  response.hasLargeTransaction = filteredTransactions.some((transaction) => {
+    return transaction.amount >= 5000;
+  });
+
+  return response;
 }

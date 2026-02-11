@@ -63,4 +63,20 @@
  */
 export function validateForm(formData) {
   // Your code here
-}
+
+  if (typeof (formData.age) === "string") formData.age = parseInt(formData.age);
+
+  let response = { isValid: true, errors: {} };
+
+  if (formData.name.trim().length === 0 || !(formData.name.length >= 2 && formData.name.length <= 50)) response.errors.name = "Name must be 2-50 characters";
+  if (formData.email.length === 0 || !formData.email.includes("@") || formData.email.indexOf("@") !== formData.email.lastIndexOf("@") || !formData.email.includes(".", formData.email.indexOf("@"))) response.errors.email = "Invalid email format"
+  if (formData.phone.length !== 10 || isNaN(Number(formData.phone)) || (!formData.phone.startsWith("6") && !formData.phone.startsWith("7") && !formData.phone.startsWith("8") && !formData.phone.startsWith("9"))) response.errors.phone = "Invalid Indian phone number"
+  if (!Number.isInteger(formData.age) || !(formData.age >= 16 && formData.age <= 100)) response.errors.age = "Age must be an integer between 16 and 100"
+  if (typeof (formData.pincode) !== "string" || isNaN(Number(formData.pincode)) || formData.pincode.length !== 6 || formData.pincode.startsWith("0")) response.errors.pincode = "Invalid Indian pincode"
+  if (formData.state === null || formData.state === undefined || formData.state.length === 0) response.errors.state = "State is required"
+  if (!formData.agreeTerms) response.errors.agreeTerms = "Must agree to terms"
+
+  Object.keys(response.errors).length === 0 ? response.isValid = true : response.isValid = false;
+
+  return response;
+};

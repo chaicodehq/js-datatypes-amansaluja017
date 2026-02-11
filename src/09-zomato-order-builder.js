@@ -47,4 +47,50 @@
  */
 export function buildZomatoOrder(cart, coupon) {
   // Your code here
-}
+  if (cart === null || !Array.isArray(cart) || cart.length === 0) return null;
+
+  let response = { items: [], subtotal: 0, deliveryFee: 0, gst: 0, discount: 0, grandTotal: 0 };
+
+  const filteredCart = cart.filter(item => {
+    if (item.qty > 0) return item
+  });
+
+  filteredCart.map((item) => {
+    let itemObj = {};
+    itemObj.name = item.name;
+    itemObj.qty = item.qty;
+    itemObj.basePrice = item.price;
+
+    const addonPriceArr = item.addons?.map(item => {
+      return Number(item.split(":")[1]);
+    });
+    const addonTotal = addonPriceArr?.reduce((acc, price) => acc + price, 0);
+    itemObj.addonTotal = addonTotal || 0
+    itemObj.itemTotal = (item.price + (addonTotal || 0)) * item.qty
+    response.items.push(itemObj);
+  });
+
+
+  response.subtotal = response.items.reduce((acc, item) => acc + (item.itemTotal), 0);
+
+  if (response.subtotal < 500) response.deliveryFee = 30
+  else if (response.subtotal >= 500 && response.subtotal <= 999) response.deliveryFee = 15
+  else response.deliveryFee = 0;
+
+  response.gst = parseFloat((response.subtotal * 5 / 100).toFixed(2));
+
+  if (coupon?.toUpperCase() === "FIRST50") {
+    response.discount = Math.min(response.subtotal / 2, 150);
+  } else if (coupon?.toUpperCase() === "FLAT100") {
+    response.discount = 100
+  } else if (coupon?.toUpperCase() === "FREESHIP") {
+    response.discount = response.deliveryFee
+    response.deliveryFee = 0
+  } else response.discount = 0;
+
+  const grandTotal = parseFloat(response.subtotal + response.deliveryFee + response.gst - Math.max(response.discount, 0).toFixed(2));
+
+  response.grandTotal = grandTotal > 0 ? grandTotal : 0;
+
+  return response;
+};

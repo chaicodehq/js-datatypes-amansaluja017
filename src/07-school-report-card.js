@@ -42,4 +42,42 @@
  */
 export function generateReportCard(student) {
   // Your code here
+  if (student === null) return null;
+  if (typeof (student) !== "object" || Object.keys(student).length === 0) return null;
+  if (typeof (student.name) !== "string" || student.name.length === 0) return null;
+  if (typeof (student.marks) !== "object" || Object.keys(student.marks).length === 0) return null;
+
+  const ans = Object.values(student.marks).map(marks => {
+    if (typeof (marks) !== "number" || marks < 0 || marks > 100) {
+      console.log(true)
+      return true;
+    }
+  });
+  if (ans[0] === true) return null;
+
+  const rs = [52, 55, 45]
+  console.log(typeof (Object.values(rs)));
+
+  let response = { name: student.name, passedSubjects: [], failedSubjects: [] };
+
+  const marks = student.marks;
+  console.log(marks);
+  response.subjectCount = Object.keys(student.marks).length;
+
+  response.totalMarks = Object.values(marks).reduce((curr, acc) => curr + acc);
+  response.percentage = parseFloat(((response.totalMarks / (response.subjectCount * 100)) * 100).toFixed(2));
+
+  if (response.percentage >= 90) response.grade = "A+"
+  else if (response.percentage >= 80 && response.percentage < 90) response.grade = "A"
+  else if (response.percentage >= 70 && response.percentage < 80) response.grade = "B"
+  else if (response.percentage >= 60 && response.percentage < 70) response.grade = "C"
+  else if (response.percentage >= 40 && response.percentage < 60) response.grade = "D"
+  else response.grade = "F"
+
+  response.highestSubject = Object.entries(marks).reduce((max, curr) => (curr[1] > max[1] ? curr : max))[0];
+  response.lowestSubject = Object.entries(marks).reduce((min, curr) => (curr[1] < min[1] ? curr : min))[0];
+
+  Object.entries(marks).filter(sub => sub[1] >= 40 ? response.passedSubjects.push(sub[0]) : response.failedSubjects.push(sub[0]));
+
+  return response;
 }
